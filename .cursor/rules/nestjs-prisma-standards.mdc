@@ -1,0 +1,63 @@
+---
+description: Code standards for NestJS + Prisma + Redis project in AI Task Orchestrator
+globs: **/*.ts
+alwaysApply: true
+---
+
+# NestJS + Prisma Standards for this project
+
+## File Structure
+
+- Use feature-based modular structure (`auth/`, `tasks/`, `common/`)
+- DTOs inside `dto/` folder
+- Guards and Strategies in specific subfolders
+- Services must be injectable and loosely coupled
+
+## Code Conventions
+
+### Naming
+- **Classes**: PascalCase (`TasksService`, `CreateTaskDto`)
+- **Methods**: camelCase (`findAll`, `createTask`)
+- **Variables**: camelCase
+- **Interfaces/Types**: PascalCase with `I` prefix only when necessary
+
+### Prisma
+- Always use explicit `select` to avoid leaking sensitive data
+- Use `include` only when necessary
+- Handle `NotFoundException` in Services
+- Never expose `password` in responses
+
+### Redis Caching
+- Key prefix: `tasks:user:{userId}:*`
+- TTL configurable via `REDIS_TTL`
+- Invalidate cache on all write operations (`create`, `update`, `delete`)
+
+### Error Handling
+- Use global `AllExceptionsFilter`
+- Throw specific `HttpException` (`NotFoundException`, `ConflictException`, `UnauthorizedException`)
+- Never use `console.error` in production (use NestJS Logger)
+
+### Security
+- All Tasks endpoints must use `JwtAuthGuard`
+- Extract `userId` from `req.user.userId`
+- Never return passwords or sensitive data
+
+### AI Service
+- Keep `categorizeTask(description: string)` method async
+- Ready to be replaced with real LLM integration
+
+## SOLID Best Practices
+
+- **S**: Each class has a single responsibility
+- **O**: Open for extension (e.g. new AI provider)
+- **L**: Liskov substitution respected
+- **I**: Small and specific interfaces
+- **D**: Depend on abstractions (PrismaService injected)
+
+## Validation
+
+- Use `class-validator` in all DTOs
+- Global `@UsePipes(ValidationPipe)` in `main.ts`
+- `whitelist: true` + `forbidNonWhitelisted: true`
+
+This rule applies to **all** `.ts` files in the project.
